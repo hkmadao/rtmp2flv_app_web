@@ -1,0 +1,11 @@
+.vite-ssg-temp
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+
+# lock
+
+*.log

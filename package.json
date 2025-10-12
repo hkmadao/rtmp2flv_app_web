@@ -1,0 +1,41 @@
+{
+  "name": "Live",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "generate": "vite-ssg build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "functor-test": "ts-node functor",
+    "gen:Route": "ts-node ./genRoute"
+  },
+  "dependencies": {
+    "ant-design-vue": "^4.2.6",
+    "axios": "^1.5.0",
+    "element-plus": "^2.7.3",
+    "nanoid": "4.0.2",
+    "pinia": "^2.1.6",
+    "ramda": "^0.29.0",
+    "vue": "^3.4.20",
+    "vue-router": "^4.2.4",
+    "flv.js": "^1.5.0"
+  },
+  "devDependencies": {
+    "@iconify-json/ep": "^1.1.12",
+    "@types/node": "^20.5.1",
+    "@types/ramda": "^0.29.4",
+    "@vitejs/plugin-vue": "^4.3.1",
+    "@vitejs/plugin-vue-jsx": "^3.1.0",
+    "sass": "^1.66.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
+    "unocss": "^0.53.6",
+    "unplugin-vue-components": "^0.25.1",
+    "vite": "^4.4.9",
+    "vite-ssg": "^0.22.2",
+    "vue-tsc": "^1.8.8"
+  },
+  "license": "MIT"
+}
