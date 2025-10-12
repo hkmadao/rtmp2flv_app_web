@@ -1,7 +1,6 @@
 import Axios, { } from 'axios';
 import Env from '~/conf/env';
 import { getLonginUser, setLonginUser, setRediectPath, User } from '../session';
-import { ElMessage as message } from 'element-plus'
 
 const serverURL = Env.serverURL;
 
@@ -30,7 +29,7 @@ Axios.interceptors.response.use(
       if (response.data.status === 0) {
         response.data = response.data.data;
       } else if (response.data.status === 1) {
-        message.error(response.data.message);
+        console.error(response.data.message);
         return Promise.reject(response.data.message);
       }
     }
@@ -49,19 +48,19 @@ Axios.interceptors.response.use(
           // history.push('/login');
           const user = getLonginUser();
           setLonginUser({ ...user, token: undefined });
-          message.error('尚未登录或登录已过期，请重新登录!');
+          console.error('尚未登录或登录已过期，请重新登录!');
         } else if (error.response.status === 403) {
-          message.error('权限不足!');
+          console.error('权限不足!');
         } else if (error.response.status === 500) {
-          message.error('server exception !');
+          console.error('server exception !');
         }
       } else if (
         error &&
         String(error).toLowerCase().substring(0, 14) === 'error: timeout'
       ) {
-        message.error('server timeout !');
+        console.error('server timeout !');
       } else {
-        message.error('server error !');
+        console.error('server error !');
       }
       return Promise.reject(error);
     }

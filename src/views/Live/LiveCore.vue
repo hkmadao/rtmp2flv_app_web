@@ -2,7 +2,7 @@
   <div :style="{ display: 'flex', 'flex-direction': 'column', gap: '5px' }">
     <div :style="{ display: 'flex', gap: '5px' }">
       <div>
-        摄像头：<b>{{ flvMediaInfo.anchorName }}</b>
+        摄像头：<b>{{ liveInfo.name }}</b>
       </div>
       <div>
         在线：
@@ -12,9 +12,10 @@
         <span v-if="!flvMediaInfo.onlineStatus" :style="{ color: 'red' }"
           >否</span
         >
-        <Checkbox size="small" :checked="flvMediaInfo.hasAudio" disabled="true">
-          hasAudio
-        </Checkbox>
+      </div>
+      <div :style="{ display: 'flex', gap: '5px' }">
+        <div>是否有音频:</div>
+        <Checkbox size="small" :checked="flvMediaInfo.hasAudio" />
       </div>
     </div>
     <div :style="{ display: 'flex', gap: '5px' }">
@@ -39,7 +40,7 @@
       <video
         ref="videoElementRef"
         @click="handleViedoClick"
-        :className="flvMediaInfo.anchorName"
+        :className="liveInfo.id"
         controls
         width="90%"
       >
@@ -53,8 +54,8 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import Flv from "flv.js";
 import { Button, Checkbox, message } from "ant-design-vue";
-import Env from "../../conf/env";
 import BaseAPI from "../../api";
+import { TLiveInfo } from "~/localStorage";
 
 const canStop = ref<boolean>(false);
 const playRef = ref<Flv.Player>();
@@ -62,26 +63,18 @@ const videoElementRef = ref<HTMLMediaElement>();
 const flvMediaInfo = ref<FlvMediaInfo>({
   hasAudio: false,
   onlineStatus: false,
-  anchorName: "--",
 });
 const fgOnlineStatusRef = ref<boolean>(flvMediaInfo.value.onlineStatus);
 const checkOnlineStatusInterval = ref();
 const interval = ref();
 
-const { getLiveInfo } = defineProps<{
-  getLiveInfo: () => TLiveInfo | undefined;
+const { liveInfo } = defineProps<{
+  liveInfo: TLiveInfo;
 }>();
 
 type FlvMediaInfo = {
   hasAudio: boolean;
   onlineStatus: boolean;
-  anchorName: string;
-};
-
-export type TLiveInfo = {
-  method: "permanent" | "temp";
-  code: string;
-  playAuthCode: string;
 };
 
 watch(flvMediaInfo, () => {
@@ -104,19 +97,19 @@ onBeforeUnmount(() => {
 
 const handlePlay = () => {
   if (!playRef.value) {
-    const liveInfo = getLiveInfo();
-    if (!liveInfo) {
-      return;
+    if (liveInfo.mediaInfoUrl) {
+      const mediaInfoGetUrl = liveInfo.mediaInfoUrl;
+      BaseAPI.GET(mediaInfoGetUrl).then((mediaInfo: FlvMediaInfo) => {
+        flvMediaInfo.value = mediaInfo;
+        if (!mediaInfo.onlineStatus) {
+          message.error(`anchor: ${liveInfo.name} not on the air`);
+          return;
+        }
+        flv_load(mediaInfo.hasAudio);
+      });
+    } else {
+      flv_load(flvMediaInfo.value.hasAudio);
     }
-    const mediaInfoGetUrl = `/live/getMediaInfo/${liveInfo.method}/${liveInfo.code}/${liveInfo.playAuthCode}.flv`;
-    BaseAPI.GET(mediaInfoGetUrl).then((mediaInfo: FlvMediaInfo) => {
-      flvMediaInfo.value = mediaInfo;
-      if (!mediaInfo.onlineStatus) {
-        message.error(`anchor: ${mediaInfo.anchorName} not on the air`);
-        return;
-      }
-      flv_load(mediaInfo.hasAudio);
-    });
   }
 };
 
@@ -135,19 +128,14 @@ const flv_load = (hasAudio: boolean) => {
   var mediaDataSource: Flv.MediaDataSource = {
     type: "flv",
   };
-  const liveInfo = getLiveInfo();
-  if (!liveInfo) {
-    return;
-  }
-  const serverURL = Env.directServerUrl;
-  let videoUrl = `${serverURL}/live/${liveInfo.method}/${liveInfo.code}/${liveInfo.playAuthCode}.flv`;
+  let videoUrl = liveInfo.url;
   mediaDataSource["url"] = videoUrl;
   mediaDataSource["hasAudio"] = hasAudio;
   mediaDataSource["isLive"] = true;
   console.log("MediaDataSource", mediaDataSource);
 
   let element = document.getElementsByClassName(
-    flvMediaInfo.value.anchorName
+    liveInfo.id!
   )[0] as HTMLMediaElement;
   const tempEles = element.getElementsByTagName("video");
   if (tempEles && tempEles.length > 0) {
@@ -187,50 +175,50 @@ const handleViedoClick = (e: any) => {
 };
 
 onMounted(() => {
-  const liveInfo = getLiveInfo();
-  if (!liveInfo) {
-    return;
-  }
-  const mediaInfoGetUrl = `/live/getMediaInfo/${liveInfo.method}/${liveInfo.code}/${liveInfo.playAuthCode}.flv`;
-  BaseAPI.GET(mediaInfoGetUrl).then((mediaInfo: FlvMediaInfo) => {
-    flvMediaInfo.value = mediaInfo;
-  });
-
-  checkOnlineStatusInterval.value = setInterval(() => {
-    if (fgOnlineStatusRef.value === true) {
-      return;
-    }
-    const liveInfo = getLiveInfo();
-    if (!liveInfo) {
-      return;
-    }
-    const mediaInfoGetUrl = `/live/getMediaInfo/${liveInfo.method}/${liveInfo.code}/${liveInfo.playAuthCode}.flv`;
+  if (!liveInfo.mediaInfoUrl) {
+    flvMediaInfo.value = {
+      hasAudio: true,
+      onlineStatus: true,
+    };
+  } else {
+    const mediaInfoGetUrl = liveInfo.mediaInfoUrl;
     BaseAPI.GET(mediaInfoGetUrl).then((mediaInfo: FlvMediaInfo) => {
       flvMediaInfo.value = mediaInfo;
     });
-  }, 60000);
-  checkOnlineStatusInterval.value;
 
-  interval.value = setInterval(() => {
-    if (videoElementRef.value && playRef.value) {
-      canStop.value = true;
-      const buffered = videoElementRef.value.buffered;
-      if (videoElementRef.value.paused && buffered && buffered.length > 0) {
-        const maxBufferedSec = 3 * 60;
-        const currentTime = videoElementRef.value.currentTime;
-        if (buffered.end(0) - currentTime > maxBufferedSec) {
-          console.log("vedio paused, buffered max, unload the media data");
-          playRef.value.pause();
-          playRef.value.unload();
-          playRef.value.detachMediaElement();
-          playRef.value.destroy();
-          playRef.value = undefined;
-        }
+    checkOnlineStatusInterval.value = setInterval(() => {
+      if (fgOnlineStatusRef.value === true) {
+        return;
       }
-    } else {
-      canStop.value = false;
-    }
-  }, 1000);
+
+      const mediaInfoGetUrl = liveInfo.mediaInfoUrl!;
+      BaseAPI.GET(mediaInfoGetUrl).then((mediaInfo: FlvMediaInfo) => {
+        flvMediaInfo.value = mediaInfo;
+      });
+    }, 60000);
+    checkOnlineStatusInterval.value;
+
+    interval.value = setInterval(() => {
+      if (videoElementRef.value && playRef.value) {
+        canStop.value = true;
+        const buffered = videoElementRef.value.buffered;
+        if (videoElementRef.value.paused && buffered && buffered.length > 0) {
+          const maxBufferedSec = 3 * 60;
+          const currentTime = videoElementRef.value.currentTime;
+          if (buffered.end(0) - currentTime > maxBufferedSec) {
+            console.log("vedio paused, buffered max, unload the media data");
+            playRef.value.pause();
+            playRef.value.unload();
+            playRef.value.detachMediaElement();
+            playRef.value.destroy();
+            playRef.value = undefined;
+          }
+        }
+      } else {
+        canStop.value = false;
+      }
+    }, 1000);
+  }
 });
 </script>
 
