@@ -1,10 +1,4 @@
-export type User = {
-  id?: string;
-  account?: string;
-  username?: string;
-  nickName?: string;
-  token?: string;
-};
+import { clearRememberUser, TUser } from "~/localStorage";
 
 export type UserInfo = {
   account?: string;
@@ -19,31 +13,12 @@ export type LoginSession = {
 
 const loginSessionKey = 'loginSession';
 
-export const setRememberUser = (user: User) => {
-  window.sessionStorage.setItem(user.username!, JSON.stringify(user));
-};
-
-export const getRememberUser = (user: User) => {
-  if (!user.username) {
-    return;
-  }
-  const userJson = window.sessionStorage.getItem(user.username);
-  if (!userJson) {
-    return;
-  }
-  return JSON.parse(userJson) as (User & { password: string; remember: boolean });
-};
-
-export const clearRememberUser = (user: User) => {
-  window.sessionStorage.removeItem(user.username!);
-};
-
 export const clearSessionStore = () => {
   window.sessionStorage.removeItem('user');
   window.sessionStorage.removeItem(loginSessionKey);
 };
 
-export const setLonginUser = (user: User) => {
+export const setLonginUser = (user: TUser) => {
   window.sessionStorage.setItem('user', JSON.stringify(user));
 };
 
@@ -94,14 +69,14 @@ export const getRediectPath = () => {
   return <string>window.sessionStorage.getItem('rediectPath');
 };
 
-export const getLonginUser: () => User = () => {
+export const getLonginUser: () => TUser = () => {
   if (!window.sessionStorage.getItem('user')) {
-    return <User>{};
+    return <TUser>{};
   }
   try {
-    return <User>JSON.parse(<string>window.sessionStorage.getItem('user'));
+    return <TUser>JSON.parse(<string>window.sessionStorage.getItem('user'));
   } catch (err) {
     window.sessionStorage.removeItem('user');
-    return <User>{};
+    return <TUser>{};
   }
 };

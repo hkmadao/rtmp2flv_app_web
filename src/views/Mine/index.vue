@@ -70,15 +70,13 @@ import {
 } from "@ant-design/icons-vue";
 import {
   clearLoginSession,
-  clearRememberUser,
   getLoginSession,
   getLonginUser,
-  getRememberUser,
   LoginSession,
   setLoginSession,
-  setRememberUser,
 } from "../../session";
 import { login, logout } from "../../api/liveApp";
+import { clearRememberUser, getRememberUser, setRememberUser } from "~/localStorage";
 
 const session = ref<LoginSession | undefined>(getLoginSession());
 const loading = ref(false);

@@ -8,6 +8,14 @@ export type TLiveInfo = {
   url?: string;
 };
 
+export type TUser = {
+  id?: string;
+  account?: string;
+  username?: string;
+  nickName?: string;
+  token?: string;
+};
+
 const initData: TLiveInfo[] = [
   {
     id: '1',
@@ -76,3 +84,22 @@ export const deleteLiveInfo = (id: string) => {
     window.localStorage.setItem('liveInfoList', JSON.stringify(newLiveInfoList));
   }
 }
+
+export const setRememberUser = (user: TUser) => {
+  window.localStorage.setItem(user.username!, JSON.stringify(user));
+};
+
+export const getRememberUser = (user: TUser) => {
+  if (!user.username) {
+    return;
+  }
+  const userJson = window.localStorage.getItem(user.username);
+  if (!userJson) {
+    return;
+  }
+  return JSON.parse(userJson) as (TUser & { password: string; remember: boolean });
+};
+
+export const clearRememberUser = (user: TUser) => {
+  window.localStorage.removeItem(user.username!);
+};
