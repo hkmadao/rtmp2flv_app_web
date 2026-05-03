@@ -45,7 +45,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { Button, Checkbox, message } from "ant-design-vue";
 import BaseAPI from "../../api";
 import FlvVideo from "../../components/FlvVideo.vue";
-import { TLiveInfo } from "~/localStorage";
+import { TLiveInfo } from "~/localStorage/shareWithMeConfig";
 
 const canStop = ref<boolean>(false);
 const playerRef = ref<InstanceType<typeof FlvVideo>>();

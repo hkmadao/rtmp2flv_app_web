@@ -1,33 +1,19 @@
 import { nanoid } from "nanoid";
+import { TLiveInfo } from "./model";
 import Env from "~/conf/env";
-
-export type TLiveInfo = {
-  id?: string;
-  name?: string;
-  mediaInfoUrl?: string;
-  url?: string;
-};
-
-export type TUser = {
-  id?: string;
-  account?: string;
-  username?: string;
-  nickName?: string;
-  token?: string;
-};
 
 const initData: TLiveInfo[] = [
   {
     id: '1',
     name: '门口',
-    mediaInfoUrl: `/live/getMediaInfo/temp/camera-01/123456.flv`,
-    url: `/live/temp/camera-01/123456.flv`,
+    mediaInfoUrl: `${Env.directServerUrl}/live/getMediaInfo/temp/camera-01/123456.flv`,
+    url: `${Env.directServerUrl}/live/temp/camera-01/123456.flv`,
   },
   {
     id: '2',
     name: '厅',
-    mediaInfoUrl: `/live/getMediaInfo/temp/camera-02/123456.flv`,
-    url: `/live/temp/camera-02/123456.flv`,
+    mediaInfoUrl: `${Env.directServerUrl}/live/getMediaInfo/temp/camera-02/123456.flv`,
+    url: `${Env.directServerUrl}/live/temp/camera-02/123456.flv`,
   }
 ];
 
@@ -85,21 +71,4 @@ export const deleteLiveInfo = (id: string) => {
   }
 }
 
-export const setRememberUser = (user: TUser) => {
-  window.localStorage.setItem(user.username!, JSON.stringify(user));
-};
 
-export const getRememberUser = (user: TUser) => {
-  if (!user.username) {
-    return;
-  }
-  const userJson = window.localStorage.getItem(user.username);
-  if (!userJson) {
-    return;
-  }
-  return JSON.parse(userJson) as (TUser & { password: string; remember: boolean });
-};
-
-export const clearRememberUser = (user: TUser) => {
-  window.localStorage.removeItem(user.username!);
-};

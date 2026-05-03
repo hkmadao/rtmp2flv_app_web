@@ -34,7 +34,7 @@ import {
   saveOrUpdateLiveInfo,
   deleteLiveInfo,
   TLiveInfo,
-} from "~/localStorage";
+} from "~/localStorage/shareWithMeConfig";
 
 const { liveInfo: liveInfoProps, deleteCallback } = defineProps<{
   liveInfo: TLiveInfo;

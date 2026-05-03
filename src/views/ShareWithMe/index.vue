@@ -8,8 +8,11 @@
       gap: '5px',
     }"
   >
-    <div v-if="!showConfig" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-      <Button @click="handleShowConfig" >
+    <div
+      v-if="!showConfig"
+      style="display: flex; justify-content: flex-end; margin-bottom: 10px"
+    >
+      <Button @click="handleShowConfig">
         <template #icon>
           <SettingOutlined />
         </template>
@@ -23,7 +26,10 @@
         :liveInfo="liveInfo"
       />
     </div>
-    <div v-if="showConfig" style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+    <div
+      v-if="showConfig"
+      style="display: flex; justify-content: flex-end; margin-bottom: 10px"
+    >
       <Button @click="handleHiddenConfig" type="primary">
         <template #icon>
           <CheckOutlined />
@@ -40,7 +46,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { Button } from "ant-design-vue";
-import { SettingOutlined, CheckOutlined } from '@ant-design/icons-vue';
+import { SettingOutlined, CheckOutlined } from "@ant-design/icons-vue";
 import LiveCore from "./LiveCore.vue";
 import LiveList from "./LiveList.vue";
 import { getLiveInfoList, TLiveInfo } from "~/localStorage";

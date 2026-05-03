@@ -172,12 +172,12 @@ import {
   ReloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons-vue";
-import { getLoginSession } from "../../session";
 import { LiveHistoryFile } from "../../api/liveApp";
 import FlvVideo from "../../components/FlvVideo.vue";
 import BaseAPI from "~/api";
 import { pickList } from "../../api/liveApp";
 import Env from "~/conf/env";
+import { getLoginLocalStorage } from "~/localStorage";
 
 // 定义属性
 interface CameraInfo {
@@ -345,7 +345,7 @@ const fetchHistoryFilesWithParams = async (
 const loadFiles = async (isRefresh = false) => {
   if (!props.camera) return;
 
-  const session = getLoginSession();
+  const session = getLoginLocalStorage();
   errorMessage.value = "";
 
   if (!session?.token) {

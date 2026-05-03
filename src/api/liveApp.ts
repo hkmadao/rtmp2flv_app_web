@@ -1,5 +1,5 @@
 import BaseAPI from './index';
-import { LoginSession, UserInfo } from '../session';
+import { LoginStorage, UserInfo } from '../localStorage';
 
 export type LoginParams = {
   username: string;
@@ -132,7 +132,7 @@ export const pickList = <T>(res: unknown): T[] => {
   return [];
 };
 
-const normalizeLoginSession = (res: unknown, account: string): LoginSession => {
+const normalizeLoginSession = (res: unknown, account: string): LoginStorage => {
   const value = res as {
     token?: string;
     username?: string;

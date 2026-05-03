@@ -69,16 +69,18 @@ import {
   UserOutlined,
 } from "@ant-design/icons-vue";
 import {
-  clearLoginSession,
-  getLoginSession,
+  clearLoginLocalStorage,
+  clearRememberUser,
+  getLoginLocalStorage,
   getLonginUser,
-  LoginSession,
-  setLoginSession,
-} from "../../session";
+  getRememberUser,
+  LoginStorage,
+  setLoginLocalStorage,
+  setRememberUser,
+} from "../../localStorage";
 import { login, logout } from "../../api/liveApp";
-import { clearRememberUser, getRememberUser, setRememberUser } from "~/localStorage";
 
-const session = ref<LoginSession | undefined>(getLoginSession());
+const session = ref<LoginStorage | undefined>(getLoginLocalStorage());
 const loading = ref(false);
 const form = reactive({
   username: "",
@@ -113,14 +115,14 @@ const handleLogin = async () => {
       password: password,
       remember: form.remember,
     };
-    const nextSession = await login(loginParam);
-    setLoginSession(nextSession);
+    const nextLocalStorage = await login(loginParam);
+    setLoginLocalStorage(nextLocalStorage);
     if (form.remember) {
       setRememberUser(loginParam);
     } else {
       clearRememberUser(loginParam);
     }
-    session.value = nextSession;
+    session.value = nextLocalStorage;
     form.password = "";
     message.success("登录成功");
   } catch (err) {
@@ -134,7 +136,7 @@ const handleLogout = async () => {
   loading.value = true;
   try {
     await logout();
-    clearLoginSession();
+    clearLoginLocalStorage();
     session.value = undefined;
     message.success("已退出登录");
   } catch (err) {

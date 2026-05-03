@@ -53,7 +53,7 @@ import {
   saveOrUpdateLiveInfo,
   setLiveInfoList,
   TLiveInfo,
-} from "~/localStorage";
+} from "~/localStorage/shareWithMeConfig";
 import { nanoid } from "nanoid";
 const liveInfoList = ref<TLiveInfo[]>([]);
 const confValue = ref("");

@@ -78,19 +78,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import {
-  Alert,
-  Button,
-  Card,
-  Empty,
-  Spin,
-  Tag,
-} from "ant-design-vue";
-import {
-  FileTextOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons-vue";
-import { getLoginSession } from "../../session";
+import { Alert, Button, Card, Empty, Spin, Tag } from "ant-design-vue";
+import { FileTextOutlined, ReloadOutlined } from "@ant-design/icons-vue";
+import { getLoginLocalStorage } from "../../localStorage";
 import {
   TCamera,
   TClientInfo,
@@ -109,7 +99,7 @@ type CameraCard = {
   loading: boolean;
 };
 
-const session = ref(getLoginSession());
+const session = ref(getLoginLocalStorage());
 const loading = ref(false);
 const errorMessage = ref("");
 const cameraCards = ref<CameraCard[]>([]);
@@ -131,7 +121,7 @@ const getCameraName = (camera: TCamera, index: number) =>
   camera.name || camera.code || camera.id || `主播 ${index + 1}`;
 
 const loadCameras = async () => {
-  session.value = getLoginSession();
+  session.value = getLoginLocalStorage();
   errorMessage.value = "";
 
   if (!session.value?.token) {
