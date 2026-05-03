@@ -61,11 +61,11 @@
 import { computed, onMounted, ref } from "vue";
 import { Alert, Button, Empty, Spin } from "ant-design-vue";
 import { ReloadOutlined } from "@ant-design/icons-vue";
-import { getLoginSession } from "../../session";
+import { getLoginLocalStorage } from "../../localStorage";
 import { AnchorInfo, TClientInfo, fetchAnchors, fetchClientInfos } from "../../api/liveApp";
 import AnchorCard from "./AnchorCard.vue";
 
-const session = ref(getLoginSession());
+const session = ref(getLoginLocalStorage());
 const loading = ref(false);
 const errorMessage = ref("");
 const anchors = ref<AnchorInfo[]>([]);
@@ -158,7 +158,7 @@ const anchorGroups = computed<AnchorGroup[]>(() => {
 });
 
 const loadAnchors = async () => {
-  session.value = getLoginSession();
+  session.value = getLoginLocalStorage();
   errorMessage.value = "";
 
   if (!session.value?.token) {

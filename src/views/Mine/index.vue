@@ -54,13 +54,20 @@
           <template #icon><LoginOutlined /></template>
           登录
         </Button>
+        <div>或者选择以下用户登录：</div>
+        <Button
+          v-for="(rUser, index) in rememberUsers"
+          :key="rUser.username!"
+          @click="handleSelectLogin(rUser.username!)"
+          >{{ rUser.username }}</Button
+        >
       </div>
     </Card>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { md5 } from "js-md5";
 import { Avatar, Button, Card, Checkbox, Input, message } from "ant-design-vue";
 import {
@@ -71,16 +78,19 @@ import {
 import {
   clearLoginLocalStorage,
   clearRememberUser,
+  getAllRememberUser,
   getLoginLocalStorage,
   getLonginUser,
   getRememberUser,
   LoginStorage,
   setLoginLocalStorage,
   setRememberUser,
+  TUser,
 } from "../../localStorage";
 import { login, logout } from "../../api/liveApp";
 
 const session = ref<LoginStorage | undefined>(getLoginLocalStorage());
+const rememberUsers = ref<TUser[]>(getAllRememberUser());
 const loading = ref(false);
 const form = reactive({
   username: "",
@@ -88,18 +98,30 @@ const form = reactive({
   remember: true,
 });
 
-onMounted(() => {
-  const user = getLonginUser();
-  if (user) {
-    const rememberUser = getRememberUser(user);
-    if (!rememberUser) {
-      return;
-    }
-    form.username = rememberUser.username || "";
-    form.password = rememberUser.password || "";
-    form.remember = rememberUser.remember;
+const handleSelectLogin = async (username: string) => {
+  const rememberUser = getRememberUser(username!);
+  if (!rememberUser) {
+    message.error("找不到用户信息");
+    return;
   }
-});
+  loading.value = true;
+  try {
+    const loginParam = {
+      username: username,
+      password: rememberUser.password,
+      remember: rememberUser.remember,
+    };
+    const nextLocalStorage = await login(loginParam);
+    setLoginLocalStorage(nextLocalStorage);
+    setRememberUser(loginParam);
+    session.value = nextLocalStorage;
+    message.success("登录成功");
+  } catch (err) {
+    message.error(`登录失败：${String(err)}`);
+  } finally {
+    loading.value = false;
+  }
+};
 
 const handleLogin = async () => {
   if (!form.username || !form.password) {
@@ -109,7 +131,7 @@ const handleLogin = async () => {
 
   loading.value = true;
   try {
-    const password = md5(form.password).toUpperCase();
+    let password = md5(form.password).toUpperCase();
     const loginParam = {
       username: form.username,
       password: password,
@@ -120,7 +142,7 @@ const handleLogin = async () => {
     if (form.remember) {
       setRememberUser(loginParam);
     } else {
-      clearRememberUser(loginParam);
+      clearRememberUser(loginParam.username);
     }
     session.value = nextLocalStorage;
     form.password = "";
@@ -136,7 +158,10 @@ const handleLogout = async () => {
   loading.value = true;
   try {
     await logout();
+    const loginUser = getLonginUser();
+    clearRememberUser(loginUser.username!);
     clearLoginLocalStorage();
+    rememberUsers.value = getAllRememberUser();
     session.value = undefined;
     message.success("已退出登录");
   } catch (err) {

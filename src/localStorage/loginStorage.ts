@@ -14,22 +14,47 @@ export type LoginStorage = {
 const loginLocalStorageKey = 'loginStorage';
 
 export const setRememberUser = (user: TUser) => {
-  window.localStorage.setItem(user.username!, JSON.stringify(user));
+  console.log('setRememberUser', user);
+  const rememberUserStr = window.localStorage.getItem("rememberUser");
+  if (rememberUserStr) {
+    const rememberUsers: TUser[] = JSON.parse(rememberUserStr);
+    const users = rememberUsers.filter(item => item.username !== user.username);
+    window.localStorage.setItem("rememberUser", JSON.stringify([...users, user]));
+  } else {
+    window.localStorage.setItem("rememberUser", JSON.stringify([user]));
+  }
 };
 
-export const getRememberUser = (user: TUser) => {
-  if (!user.username) {
+export const getRememberUser = (username: string) => {
+  if (!username) {
     return;
   }
-  const userJson = window.localStorage.getItem(user.username);
-  if (!userJson) {
+  const rememberUserStr = window.localStorage.getItem("rememberUser");
+  if (!rememberUserStr) {
     return;
   }
-  return JSON.parse(userJson) as (TUser & { password: string; remember: boolean });
+  const rememberUsers: TUser[] = JSON.parse(rememberUserStr);
+  const user = rememberUsers.find(item => item.username === username);
+  return user as (TUser & { password: string; remember: boolean });
 };
 
-export const clearRememberUser = (user: TUser) => {
-  window.localStorage.removeItem(user.username!);
+export const getAllRememberUser = () => {
+  const rememberUserStr = window.localStorage.getItem("rememberUser");
+  if (!rememberUserStr) {
+    return [];
+  }
+  const rememberUsers: TUser[] = JSON.parse(rememberUserStr);
+  return rememberUsers ?? [];
+}
+
+export const clearRememberUser = (username: string) => {
+  const rememberUserStr = window.localStorage.getItem("rememberUser");
+  if (!rememberUserStr) {
+    return;
+  }
+  const rememberUsers: TUser[] = JSON.parse(rememberUserStr);
+  const users = rememberUsers.filter(item => item.username !== username);
+  window.localStorage.setItem("rememberUser", JSON.stringify(users));
 };
 
 export const clearLocalStorageStore = () => {
@@ -55,7 +80,6 @@ export const clearLoginLocalStorage = () => {
   window.localStorage.removeItem(loginLocalStorageKey);
   const user = getLonginUser();
   setLonginUser({ ...user, token: undefined });
-  clearRememberUser(user);
 };
 
 export const getLoginLocalStorage: () => LoginStorage | undefined = () => {

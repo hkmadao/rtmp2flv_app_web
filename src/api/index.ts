@@ -1,6 +1,6 @@
 import Axios, { } from 'axios';
 import Env from '~/conf/env';
-import { clearLoginSession, getAuthToken, getLonginUser, setLonginUser, setRediectPath } from '../session';
+import { clearLoginLocalStorage, getAuthToken, getLonginUser, setLonginUser, setRediectPath } from '../localStorage';
 
 const serverURL = Env.serverURL;
 
@@ -47,7 +47,7 @@ Axios.interceptors.response.use(
           // history.push('/login');
           const user = getLonginUser();
           setLonginUser({ ...user, token: undefined });
-          clearLoginSession();
+          clearLoginLocalStorage();
           console.error('尚未登录或登录已过期，请重新登录!');
         } else if (error.response.status === 403) {
           console.error('权限不足!');

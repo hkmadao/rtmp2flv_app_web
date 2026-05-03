@@ -22,7 +22,7 @@
           ref="videoElementRef"
           class="centered-video"
           width="100%"
-          poster="/video-background.png"
+          :poster="videoBackground"
           @click="handleVideoTogglePlay"
         >
           您的浏览器不支持 HTML5 video
@@ -30,16 +30,14 @@
 
         <!-- 播放/暂停按钮（居中） -->
         <div class="center-play-button" @click="handleVideoTogglePlay">
-          <img
-            v-if="!fgPlay"
-            width="50"
-            src="/play.svg"
-            alt="播放"
-          />
+          <img v-if="!fgPlay" width="50" :src="playIcon" alt="播放" />
         </div>
 
         <!-- 控制栏 -->
-        <div class="control-bar" :class="{ 'hidden': !mouseMoveOnVideo && fgPlay }">
+        <div
+          class="control-bar"
+          :class="{ hidden: !mouseMoveOnVideo && fgPlay }"
+        >
           <div class="timeline-content">
             <!-- 进度条 -->
             <div class="progress-container">
@@ -58,18 +56,8 @@
             <div class="controls-row">
               <!-- 播放/暂停按钮 -->
               <div class="play-btn" @click="handleVideoTogglePlay">
-                <img
-                  v-if="fgPlay"
-                  width="26"
-                  src="/pause.svg"
-                  alt="暂停"
-                />
-                <img
-                  v-else
-                  width="26"
-                  src="/play.svg"
-                  alt="播放"
-                />
+                <img v-if="fgPlay" width="26" :src="pauseIcon" alt="暂停" />
+                <img v-else width="26" :src="playIcon" alt="播放" />
               </div>
 
               <!-- 时间显示 -->
@@ -94,12 +82,22 @@
                   />
                 </div>
               </div>
+              <!-- 全屏按钮（隐藏） -->
+              <div @click="handleFullScreen">
+                <img
+                  v-if="fgFullScreen"
+                  width="20"
+                  :src="exitFullScreenIcon"
+                  alt="退出全屏"
+                />
+                <img
+                  v-if="!fgFullScreen"
+                  width="20"
+                  :src="gotoFullScreenIcon"
+                  alt="进入全屏"
+                />
+              </div>
             </div>
-          </div>
-
-          <!-- 全屏按钮（隐藏） -->
-          <div hidden @click="handleFullScreen">
-            {{ fgFullScreen ? '退出全屏' : '进入全屏' }}
           </div>
         </div>
       </div>
@@ -113,7 +111,19 @@ import Flv from "flv.js";
 import { Checkbox, message, Spin } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import BaseAPI from "~/api";
-import { getLoginSession } from "~/session";
+import { getLoginLocalStorage } from "~/localStorage";
+
+// 导入图标资源
+import playIcon from "~/assets/icons/play.svg";
+import pauseIcon from "~/assets/icons/pause.svg";
+import volumeDisableIcon from "~/assets/icons/volumeDisable.svg";
+import volumeZeroIcon from "~/assets/icons/volumeZero.svg";
+import volumeLowIcon from "~/assets/icons/volumeLow.svg";
+import volumeMiddleIcon from "~/assets/icons/volumeMiddle.svg";
+import volumeHighIcon from "~/assets/icons/volumeHigh.svg";
+import exitFullScreenIcon from "~/assets/icons/exit-full-screen.svg";
+import gotoFullScreenIcon from "~/assets/icons/goto-full-screen.svg";
+import videoBackground from "~/assets/icons/video-background.png";
 
 interface FlvMediaInfo {
   duration: number;
@@ -152,7 +162,6 @@ const hasAudio = ref(true);
 const loading = ref(false);
 const showVideoElement = ref(true);
 const videoElementRef = ref<HTMLVideoElement>();
-const modalContentRef = ref<HTMLDivElement>();
 const lockRef = ref(false);
 
 const fgMuted = ref(false);
@@ -180,18 +189,18 @@ const step = computed(() => {
 
 const volumeIconSrc = computed(() => {
   if (fgMuted.value) {
-    return "/volumeDisable.svg";
+    return volumeDisableIcon;
   }
   if (volume.value === 0) {
-    return "/volumeZero.svg";
+    return volumeZeroIcon;
   }
   if (volume.value >= 0.75) {
-    return "/volumeHigh.svg";
+    return volumeHighIcon;
   }
   if (volume.value >= 0.5) {
-    return "/volumeMiddle.svg";
+    return volumeMiddleIcon;
   }
-  return "/volumeLow.svg";
+  return volumeLowIcon;
 });
 
 const currentTimeDisplay = computed(() => {
@@ -257,7 +266,7 @@ const handleRangeChange = (e: Event) => {
         lockRef.value = true;
         offsetTime.value = value;
         playerId.value = nanoid();
-        
+
         const vodProp: VodProp = {
           mediaDataGetUrl: props.mediaDataGetUrl,
           playerId: playerId.value,
@@ -268,7 +277,7 @@ const handleRangeChange = (e: Event) => {
           offsetTime: offsetTime.value,
         };
         flvLoad(vodProp);
-        
+
         setTimeout(() => {
           lockRef.value = false;
         }, 500);
@@ -285,6 +294,9 @@ const handleRangeChange = (e: Event) => {
 };
 
 const handleFullScreen = () => {
+  if(fgFullScreen.value){
+    
+  }
   fgFullScreen.value = !fgFullScreen.value;
 };
 
@@ -315,7 +327,7 @@ const handleVideoTogglePlay = () => {
     if (!playerRef.value) {
       offsetTime.value = 0;
       playerId.value = nanoid();
-      
+
       const vodProp: VodProp = {
         mediaDataGetUrl: props.mediaDataGetUrl,
         playerId: playerId.value,
@@ -365,14 +377,14 @@ const flvLoad = (vodProp: VodProp) => {
   showVideoElement.value = true;
   const seekSecond = Math.floor(vodProp.offsetTime);
   const videoUrl = `${vodProp.mediaDataGetUrl}?playerId=${vodProp.playerId}&seekSecond=${seekSecond}`;
-  
+
   const mediaDataSource: Flv.MediaDataSource = {
     type: "flv",
     duration: vodProp.duration,
     url: videoUrl,
     hasAudio: !vodProp.fgMuted,
   };
-  
+
   console.log("MediaDataSource", mediaDataSource);
 
   const element = videoElementRef.value;
@@ -383,7 +395,7 @@ const flvLoad = (vodProp: VodProp) => {
 
   destroyPlayer();
 
-  const session = getLoginSession();
+  const session = getLoginLocalStorage();
   if (!session || !session.token) {
     message.error("获取 token 失败");
     return;
@@ -430,7 +442,7 @@ const flvLoad = (vodProp: VodProp) => {
   playerRef.value.attachMediaElement(element);
   playerRef.value.load();
   playerRef.value.volume = vodProp.volume;
-  
+
   if (vodProp.fgPlay) {
     const playPromise = playerRef.value.play();
     if (playPromise && typeof (playPromise as any).catch === "function") {
@@ -452,7 +464,7 @@ onMounted(() => {
       duration.value = mediaInfo.duration;
       hasAudio.value = mediaInfo.hasAudio;
       fgMuted.value = !mediaInfo.hasAudio;
-      
+
       const vodProp: VodProp = {
         mediaDataGetUrl: props.mediaDataGetUrl,
         playerId: playerId.value,
@@ -578,3 +590,4 @@ onBeforeUnmount(() => {
   width: 100px;
 }
 </style>
+
