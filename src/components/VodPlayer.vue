@@ -14,6 +14,7 @@
       <!-- 视频容器 -->
       <div
         class="video-wrapper"
+        ref="videoWrapperRef"
         @mousemove="handleMouseMove"
         @mouseleave="handleMouseLeave"
       >
@@ -82,8 +83,8 @@
                   />
                 </div>
               </div>
-              <!-- 全屏按钮（隐藏） -->
-              <div @click="handleFullScreen">
+              <!-- 全屏按钮 -->
+              <div class="fullscreen-btn" @click="handleFullScreen">
                 <img
                   v-if="fgFullScreen"
                   width="20"
@@ -91,7 +92,7 @@
                   alt="退出全屏"
                 />
                 <img
-                  v-if="!fgFullScreen"
+                  v-else
                   width="20"
                   :src="gotoFullScreenIcon"
                   alt="进入全屏"
@@ -162,6 +163,7 @@ const hasAudio = ref(true);
 const loading = ref(false);
 const showVideoElement = ref(true);
 const videoElementRef = ref<HTMLVideoElement>();
+const videoWrapperRef = ref<HTMLDivElement>();
 const lockRef = ref(false);
 
 const fgMuted = ref(false);
@@ -294,10 +296,35 @@ const handleRangeChange = (e: Event) => {
 };
 
 const handleFullScreen = () => {
-  if(fgFullScreen.value){
-    
+  if (!videoWrapperRef.value) return;
+
+  if (!fgFullScreen.value) {
+    // 进入全屏
+    if (videoWrapperRef.value.requestFullscreen) {
+      videoWrapperRef.value.requestFullscreen();
+    } else if ((videoWrapperRef.value as any).webkitRequestFullscreen) {
+      (videoWrapperRef.value as any).webkitRequestFullscreen();
+    } else if ((videoWrapperRef.value as any).mozRequestFullScreen) {
+      (videoWrapperRef.value as any).mozRequestFullScreen();
+    } else if ((videoWrapperRef.value as any).msRequestFullscreen) {
+      (videoWrapperRef.value as any).msRequestFullscreen();
+    }
+  } else {
+    // 退出全屏
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if ((document as any).webkitExitFullscreen) {
+      (document as any).webkitExitFullscreen();
+    } else if ((document as any).mozCancelFullScreen) {
+      (document as any).mozCancelFullScreen();
+    } else if ((document as any).msExitFullscreen) {
+      (document as any).msExitFullscreen();
+    }
   }
-  fgFullScreen.value = !fgFullScreen.value;
+};
+
+const handleFullScreenChange = () => {
+  fgFullScreen.value = !!(document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement || (document as any).msFullscreenElement);
 };
 
 const handleVolumeClick = () => {
@@ -458,6 +485,12 @@ const flvLoad = (vodProp: VodProp) => {
 
 // 生命周期
 onMounted(() => {
+  // 添加全屏状态变化监听
+  document.addEventListener("fullscreenchange", handleFullScreenChange);
+  document.addEventListener("webkitfullscreenchange", handleFullScreenChange);
+  document.addEventListener("mozfullscreenchange", handleFullScreenChange);
+  document.addEventListener("MSFullscreenChange", handleFullScreenChange);
+
   loading.value = true;
   BaseAPI.GET<FlvMediaInfo>(props.mediaInfoGetUrl)
     .then((mediaInfo) => {
@@ -485,6 +518,12 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  // 移除全屏状态变化监听
+  document.removeEventListener("fullscreenchange", handleFullScreenChange);
+  document.removeEventListener("webkitfullscreenchange", handleFullScreenChange);
+  document.removeEventListener("mozfullscreenchange", handleFullScreenChange);
+  document.removeEventListener("MSFullscreenChange", handleFullScreenChange);
+
   destroyPlayer();
 });
 </script>
