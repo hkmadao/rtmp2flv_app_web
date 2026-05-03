@@ -1,19 +1,11 @@
-let env = process.env.NODE_ENV;
-let serverURL;
-let directServerUrl;
+const defaultServerUrl = 'https://47.115.229.21:9090';
 
-if (env === 'development') {
-  serverURL = 'https://47.115.229.21:9090';
-  // serverURL = '/api'
-  directServerUrl = 'https://47.115.229.21:9090'
-} else if (env === 'production') {
-  // serverURL = window.location.origin;
-  // serverURL = 'http://localhost:8082';
-  // directServerUrl = window.location.origin;
-  serverURL = 'https://47.115.229.21:9090';
-  directServerUrl = 'https://47.115.229.21:9090'
-}
+const serverURL = import.meta.env.DEV
+  ? '/api'
+  : import.meta.env.VITE_API_BASE_URL || defaultServerUrl;
 
-const Env = { serverURL: serverURL, directServerUrl: directServerUrl };
+const directServerUrl = import.meta.env.VITE_DIRECT_API_BASE_URL || defaultServerUrl;
+
+const Env = { serverURL, directServerUrl };
 
 export default Env;

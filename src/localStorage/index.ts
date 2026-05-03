@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid";
+import Env from "~/conf/env";
 
 export type TLiveInfo = {
   id?: string;
@@ -11,14 +12,14 @@ const initData: TLiveInfo[] = [
   {
     id: '1',
     name: '门口',
-    mediaInfoUrl: 'https://192.168.1.11:9090/live/getMediaInfo/temp/camera-01/123456.flv',
-    url: 'https://192.168.1.11:9090/live/temp/camera-01/123456.flv',
+    mediaInfoUrl: `/live/getMediaInfo/temp/camera-01/123456.flv`,
+    url: `/live/temp/camera-01/123456.flv`,
   },
   {
     id: '2',
     name: '厅',
-    mediaInfoUrl: 'https://192.168.1.10:9090/live/getMediaInfo/temp/camera-02/123456.flv',
-    url: 'https://192.168.1.10:9090/live/temp/camera-02/123456.flv',
+    mediaInfoUrl: `/live/getMediaInfo/temp/camera-02/123456.flv`,
+    url: `/live/temp/camera-02/123456.flv`,
   }
 ];
 

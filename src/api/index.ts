@@ -1,6 +1,6 @@
 import Axios, { } from 'axios';
 import Env from '~/conf/env';
-import { getLonginUser, setLonginUser, setRediectPath, User } from '../session';
+import { clearLoginSession, getAuthToken, getLonginUser, setLonginUser, setRediectPath } from '../session';
 
 const serverURL = Env.serverURL;
 
@@ -10,10 +10,9 @@ Axios.defaults.timeout = 60000;
 
 Axios.interceptors.request.use(
   (config) => {
-    let user: User = getLonginUser();
-    // console.log(user);
+    const token = getAuthToken();
     if (config.headers) {
-      config.headers['CRUD-Token'] = user ? user.token! : '';
+      config.headers['Authorization'] = token;
     }
     return config;
   },
@@ -48,6 +47,7 @@ Axios.interceptors.response.use(
           // history.push('/login');
           const user = getLonginUser();
           setLonginUser({ ...user, token: undefined });
+          clearLoginSession();
           console.error('尚未登录或登录已过期，请重新登录!');
         } else if (error.response.status === 403) {
           console.error('权限不足!');
@@ -70,7 +70,7 @@ Axios.interceptors.response.use(
 Axios.defaults.baseURL = serverURL;
 
 export const POST = async <T>(url: string, params: T) => {
-  const res = await Axios.post(`${serverURL}${url}`, params);
+  const res = await Axios.post(`${url}`, params);
   return res.data;
 };
 export const GET = async <T>(url: string, params?: T) => {
@@ -81,19 +81,19 @@ export const GET = async <T>(url: string, params?: T) => {
 };
 
 export const PUT = async <T>(url: any, params: T) => {
-  const res = await Axios.put(`${serverURL}${url}`, params);
+  const res = await Axios.put(`${url}`, params);
   return res.data;
 };
 
 export const DELETE = async <T>(url: any, params: { vos: T[] }) => {
-  const res = await Axios.delete(`${serverURL}${url}`, {
+  const res = await Axios.delete(`${url}`, {
     params: params,
   });
   return res.data;
 };
 
 export const PATCH = async <T>(url: any, params: T) => {
-  const res = await Axios.patch(`${serverURL}${url}`, params);
+  const res = await Axios.patch(`${url}`, params);
   return res.data;
 };
 

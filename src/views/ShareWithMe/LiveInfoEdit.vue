@@ -6,22 +6,22 @@
     <div class="item">
       <div :style="{ 'text-align': 'left' }">名称：</div>
       <div>
-        <Input :value="liveInfo.name" @change="handleNameChange" />
+        <Input v-model:value="liveInfo.name" @change="handleSave" />
       </div>
     </div>
     <div class="item">
       <div :style="{ 'text-align': 'left' }">媒体信息请求地址：</div>
       <div>
         <Input
-          :value="liveInfo.mediaInfoUrl"
-          @change="handleMediaInfoUrlChange"
+          v-model:value="liveInfo.mediaInfoUrl"
+          @change="handleSave"
         />
       </div>
     </div>
     <div class="item">
       <div :style="{ 'text-align': 'left' }">视频地址：</div>
       <div>
-        <Input :value="liveInfo.url" @change="handleUrlChange" />
+        <Input v-model:value="liveInfo.url" @change="handleSave" />
       </div>
     </div>
   </div>
@@ -34,7 +34,6 @@ import {
   saveOrUpdateLiveInfo,
   deleteLiveInfo,
   TLiveInfo,
-  getLiveInfoById,
 } from "~/localStorage";
 
 const { liveInfo: liveInfoProps, deleteCallback } = defineProps<{
@@ -42,37 +41,14 @@ const { liveInfo: liveInfoProps, deleteCallback } = defineProps<{
   deleteCallback: () => void;
 }>();
 
-const liveInfo = ref<TLiveInfo>(liveInfoProps);
+const liveInfo = ref<TLiveInfo>({ ...liveInfoProps });
 
 onMounted(() => {
-  liveInfo.value = liveInfoProps;
+  liveInfo.value = { ...liveInfoProps };
 });
 
-const handleNameChange = (e: any) => {
-  const name = e.target.value;
-  const liveInfoNew = getLiveInfoById(liveInfo.value.id!);
-  saveOrUpdateLiveInfo({
-    ...liveInfoNew,
-    name: name,
-  });
-};
-
-const handleMediaInfoUrlChange = (e: any) => {
-  const mediaInfoUrl = e.target.value;
-  const liveInfoNew = getLiveInfoById(liveInfo.value.id!);
-  saveOrUpdateLiveInfo({
-    ...liveInfoNew,
-    mediaInfoUrl: mediaInfoUrl,
-  });
-};
-
-const handleUrlChange = (e: any) => {
-  const url = e.target.value;
-  const liveInfoNew = getLiveInfoById(liveInfo.value.id!);
-  saveOrUpdateLiveInfo({
-    ...liveInfoNew,
-    url: url,
-  });
+const handleSave = () => {
+  saveOrUpdateLiveInfo({ ...liveInfo.value });
 };
 
 const handleDelete = () => {

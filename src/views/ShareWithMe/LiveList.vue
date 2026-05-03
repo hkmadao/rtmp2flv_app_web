@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { Button, Input } from "ant-design-vue";
+import { Button, message } from "ant-design-vue";
 import LiveInfoEdit from "./LiveInfoEdit.vue";
 import {
   clearLiveInfoList,
@@ -56,7 +56,7 @@ import {
 } from "~/localStorage";
 import { nanoid } from "nanoid";
 const liveInfoList = ref<TLiveInfo[]>([]);
-const confValue = ref<any>("");
+const confValue = ref("");
 
 onMounted(() => {
   liveInfoList.value = getLiveInfoList();
@@ -87,12 +87,17 @@ const handleSaveConfig = () => {
   if (!confValue.value) {
     return;
   }
-  const newLiveInfoList: TLiveInfo[] = JSON.parse(confValue.value);
-  newLiveInfoList.forEach((item) => {
-    item.id = nanoid();
-  });
-  setLiveInfoList(newLiveInfoList);
-  liveInfoList.value = getLiveInfoList();
+  try {
+    const newLiveInfoList: TLiveInfo[] = JSON.parse(confValue.value);
+    newLiveInfoList.forEach((item) => {
+      item.id = nanoid();
+    });
+    setLiveInfoList(newLiveInfoList);
+    liveInfoList.value = getLiveInfoList();
+    message.success("配置导入成功");
+  } catch (err) {
+    message.error(`配置导入失败：${String(err)}`);
+  }
 };
 
 const handleCopy = () => {
@@ -100,10 +105,10 @@ const handleCopy = () => {
   navigator.clipboard
     .writeText(JSON.stringify(liveInfoList))
     .then(() => {
-      console.log("复制成功");
+      message.success("复制成功");
     })
     .catch((err) => {
-      console.error("复制失败", err);
+      message.error(`复制失败：${String(err)}`);
     });
 };
 </script>
